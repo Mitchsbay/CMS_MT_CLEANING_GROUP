@@ -52,12 +52,12 @@ export function SitesManagement() {
     if (site) {
       setEditingSite(site);
       setFormData({
-        name: site.name,
-        address: site.address,
-        latitude: site.latitude.toString(),
-        longitude: site.longitude.toString(),
+        name: site.name || '',
+        address: site.address || '',
+        latitude: site.latitude?.toString() || '',
+        longitude: site.longitude?.toString() || '',
         instructions: site.instructions || '',
-        active: site.active,
+        active: site.active ?? true,
       });
     } else {
       setEditingSite(null);
