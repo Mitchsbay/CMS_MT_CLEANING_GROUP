@@ -16,6 +16,9 @@ import { AssetsManagement } from './pages/admin/AssetsManagement';
 import { ReportsPage } from './pages/admin/ReportsPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { StaffDashboard } from './pages/staff/StaffDashboard';
+import { StaffJobDetail } from './pages/staff/StaffJobDetail';
+import { ClientDashboard } from './pages/client/ClientDashboard';
+import { ClientJobReport } from './pages/client/ClientJobReport';
 
 function App() {
   return (
@@ -141,6 +144,39 @@ function App() {
                 <ProtectedRoute requiredRole="staff">
                   <Layout>
                     <StaffDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/staff/jobs/:id"
+              element={
+                <ProtectedRoute requiredRole="staff">
+                  <Layout>
+                    <StaffJobDetail />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/client"
+              element={
+                <ProtectedRoute requiredRole="client">
+                  <Layout>
+                    <ClientDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/client/jobs/:id"
+              element={
+                <ProtectedRoute requiredRole="client">
+                  <Layout>
+                    <ClientJobReport />
                   </Layout>
                 </ProtectedRoute>
               }

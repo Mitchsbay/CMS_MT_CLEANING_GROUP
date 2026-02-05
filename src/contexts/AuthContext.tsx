@@ -52,6 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = async (userId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userEmail = user?.email || '';
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -61,12 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (!data) {
+        const role = userEmail === 'accounts@mtcleaninggroup.com.au' ? 'admin' : 'staff';
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
             id: userId,
-            full_name: 'User',
-            role: 'staff',
+            full_name: null,
+            role,
             status: 'active',
           })
           .select()
@@ -75,6 +79,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (createError) throw createError;
         setProfile(newProfile);
       } else {
+        if (data.status === 'inactive') {
+          await supabase.auth.signOut();
+          alert('Your account has been deactivated. Please contact your administrator.');
+          setProfile(null);
+          setUser(null);
+          setSession(null);
+          return;
+        }
         setProfile(data);
       }
     } catch (error) {

@@ -14,7 +14,7 @@ export interface Database {
           id: string
           role: 'admin' | 'staff' | 'client'
           status: 'active' | 'inactive'
-          full_name: string
+          full_name: string | null
           phone: string | null
           avatar_url: string | null
           created_at: string
@@ -22,9 +22,9 @@ export interface Database {
         }
         Insert: {
           id: string
-          role: 'admin' | 'staff' | 'client'
+          role?: 'admin' | 'staff' | 'client'
           status?: 'active' | 'inactive'
-          full_name: string
+          full_name?: string | null
           phone?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -34,7 +34,7 @@ export interface Database {
           id?: string
           role?: 'admin' | 'staff' | 'client'
           status?: 'active' | 'inactive'
-          full_name?: string
+          full_name?: string | null
           phone?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -81,8 +81,8 @@ export interface Database {
           id: string
           name: string
           address: string
-          latitude: number
-          longitude: number
+          latitude: number | null
+          longitude: number | null
           client_id: string | null
           instructions: string | null
           active: boolean
@@ -93,8 +93,8 @@ export interface Database {
           id?: string
           name: string
           address: string
-          latitude: number
-          longitude: number
+          latitude?: number | null
+          longitude?: number | null
           client_id?: string | null
           instructions?: string | null
           active?: boolean
@@ -105,8 +105,8 @@ export interface Database {
           id?: string
           name?: string
           address?: string
-          latitude?: number
-          longitude?: number
+          latitude?: number | null
+          longitude?: number | null
           client_id?: string | null
           instructions?: string | null
           active?: boolean
@@ -114,42 +114,13 @@ export interface Database {
           updated_at?: string
         }
       }
-      task_templates: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          site_id: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          site_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          site_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
       jobs: {
         Row: {
           id: string
-          title: string | null
           site_id: string
           assigned_to: string | null
           scheduled_date: string
-          scheduled_start_time: string | null
-          scheduled_end_time: string | null
-          status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled'
+          status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
           notes: string | null
           created_by: string | null
           created_at: string
@@ -157,13 +128,10 @@ export interface Database {
         }
         Insert: {
           id?: string
-          title?: string | null
           site_id: string
           assigned_to?: string | null
           scheduled_date: string
-          scheduled_start_time?: string | null
-          scheduled_end_time?: string | null
-          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled'
+          status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
           notes?: string | null
           created_by?: string | null
           created_at?: string
@@ -171,91 +139,12 @@ export interface Database {
         }
         Update: {
           id?: string
-          title?: string | null
           site_id?: string
           assigned_to?: string | null
           scheduled_date?: string
-          scheduled_start_time?: string | null
-          scheduled_end_time?: string | null
-          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled'
+          status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
           notes?: string | null
           created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      job_tasks: {
-        Row: {
-          id: string
-          job_id: string
-          task_template_id: string | null
-          task_name: string
-          task_description: string | null
-          completed: boolean
-          notes: string | null
-          completed_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          job_id: string
-          task_template_id?: string | null
-          task_name: string
-          task_description?: string | null
-          completed?: boolean
-          notes?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          job_id?: string
-          task_template_id?: string | null
-          task_name?: string
-          task_description?: string | null
-          completed?: boolean
-          notes?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      tasks: {
-        Row: {
-          id: string
-          job_id: string | null
-          title: string
-          description: string | null
-          status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-          assigned_to: string | null
-          due_date: string | null
-          completed_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          job_id?: string | null
-          title: string
-          description?: string | null
-          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-          assigned_to?: string | null
-          due_date?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          job_id?: string | null
-          title?: string
-          description?: string | null
-          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-          assigned_to?: string | null
-          due_date?: string | null
-          completed_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -266,14 +155,11 @@ export interface Database {
           job_id: string
           user_id: string
           check_in_time: string
-          check_in_latitude: number
-          check_in_longitude: number
-          check_in_verified: boolean
           check_out_time: string | null
-          check_out_latitude: number | null
-          check_out_longitude: number | null
-          check_out_verified: boolean
-          signature_url: string | null
+          check_in_lat: number | null
+          check_in_lng: number | null
+          check_out_lat: number | null
+          check_out_lng: number | null
           created_at: string
         }
         Insert: {
@@ -281,14 +167,11 @@ export interface Database {
           job_id: string
           user_id: string
           check_in_time?: string
-          check_in_latitude: number
-          check_in_longitude: number
-          check_in_verified?: boolean
           check_out_time?: string | null
-          check_out_latitude?: number | null
-          check_out_longitude?: number | null
-          check_out_verified?: boolean
-          signature_url?: string | null
+          check_in_lat?: number | null
+          check_in_lng?: number | null
+          check_out_lat?: number | null
+          check_out_lng?: number | null
           created_at?: string
         }
         Update: {
@@ -296,88 +179,73 @@ export interface Database {
           job_id?: string
           user_id?: string
           check_in_time?: string
-          check_in_latitude?: number
-          check_in_longitude?: number
-          check_in_verified?: boolean
           check_out_time?: string | null
-          check_out_latitude?: number | null
-          check_out_longitude?: number | null
-          check_out_verified?: boolean
-          signature_url?: string | null
+          check_in_lat?: number | null
+          check_in_lng?: number | null
+          check_out_lat?: number | null
+          check_out_lng?: number | null
           created_at?: string
-        }
-      }
-      task_photos: {
-        Row: {
-          id: string
-          job_task_id: string
-          photo_url: string
-          photo_type: 'before' | 'after'
-          uploaded_by: string
-          uploaded_at: string
-        }
-        Insert: {
-          id?: string
-          job_task_id: string
-          photo_url: string
-          photo_type: 'before' | 'after'
-          uploaded_by: string
-          uploaded_at?: string
-        }
-        Update: {
-          id?: string
-          job_task_id?: string
-          photo_url?: string
-          photo_type?: 'before' | 'after'
-          uploaded_by?: string
-          uploaded_at?: string
         }
       }
       incidents: {
         Row: {
           id: string
-          job_id: string | null
-          site_id: string | null
+          site_id: string
           reported_by: string
           title: string
           description: string
-          severity: 'low' | 'medium' | 'high' | 'critical'
-          status: 'open' | 'in_progress' | 'investigating' | 'resolved' | 'closed'
-          photos: string[] | null
-          resolution_notes: string | null
-          resolved_at: string | null
+          severity: 'low' | 'medium' | 'high'
+          status: 'open' | 'investigating' | 'resolved'
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          job_id?: string | null
-          site_id?: string | null
+          site_id: string
           reported_by: string
           title: string
           description: string
-          severity: 'low' | 'medium' | 'high' | 'critical'
-          status?: 'open' | 'in_progress' | 'investigating' | 'resolved' | 'closed'
-          photos?: string[] | null
-          resolution_notes?: string | null
-          resolved_at?: string | null
+          severity?: 'low' | 'medium' | 'high'
+          status?: 'open' | 'investigating' | 'resolved'
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          job_id?: string | null
-          site_id?: string | null
+          site_id?: string
           reported_by?: string
           title?: string
           description?: string
-          severity?: 'low' | 'medium' | 'high' | 'critical'
-          status?: 'open' | 'in_progress' | 'investigating' | 'resolved' | 'closed'
-          photos?: string[] | null
-          resolution_notes?: string | null
-          resolved_at?: string | null
+          severity?: 'low' | 'medium' | 'high'
+          status?: 'open' | 'investigating' | 'resolved'
           created_at?: string
           updated_at?: string
+        }
+      }
+      job_photos: {
+        Row: {
+          id: string
+          job_id: string
+          uploaded_by: string
+          photo_type: 'before' | 'after'
+          storage_path: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          job_id: string
+          uploaded_by: string
+          photo_type: 'before' | 'after'
+          storage_path: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          job_id?: string
+          uploaded_by?: string
+          photo_type?: 'before' | 'after'
+          storage_path?: string
+          created_at?: string
         }
       }
       assets: {

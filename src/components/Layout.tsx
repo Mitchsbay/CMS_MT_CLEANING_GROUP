@@ -43,11 +43,18 @@ export function Layout({ children }: LayoutProps) {
 
   const staffNavigation = [
     { name: 'My Jobs', href: '/staff', icon: Home },
-    { name: 'Incidents', href: '/staff/incidents', icon: AlertTriangle },
-    { name: 'Assets', href: '/staff/assets', icon: Package },
   ];
 
-  const navigation = profile?.role === 'admin' ? adminNavigation : staffNavigation;
+  const clientNavigation = [
+    { name: 'Dashboard', href: '/client', icon: Home },
+  ];
+
+  const navigation =
+    profile?.role === 'admin'
+      ? adminNavigation
+      : profile?.role === 'client'
+      ? clientNavigation
+      : staffNavigation;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
