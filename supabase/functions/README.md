@@ -29,7 +29,7 @@ From the project root directory, run:
 
 ```bash
 # Link your project (first time only)
-supabase link --project-ref qrqygwsxvevpuahmvuel
+supabase link --project-ref jjrsvaiucajoofxcoang
 
 # Deploy create-user function
 supabase functions deploy create-user
@@ -41,7 +41,7 @@ supabase functions deploy delete-user
 ### Verify Deployment
 
 You can verify the functions are deployed by checking your Supabase dashboard:
-https://supabase.com/dashboard/project/qrqygwsxvevpuahmvuel/functions
+https://supabase.com/dashboard/project/jjrsvaiucajoofxcoang/functions
 
 ## Testing
 
