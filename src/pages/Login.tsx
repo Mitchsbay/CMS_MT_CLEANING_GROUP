@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from '../components/Router';
 import { Button } from '../components/ui/Button';
@@ -10,9 +10,21 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
-  const { signIn, resetPassword, profile } = useAuth();
+  const { signIn, resetPassword, profile, user } = useAuth();
   const { navigate } = useRouter();
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (user && profile && !loading) {
+      if (profile.role === 'admin') {
+        navigate('/admin');
+      } else if (profile.role === 'staff') {
+        navigate('/staff');
+      } else {
+        navigate('/client');
+      }
+    }
+  }, [user, profile, loading, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -26,14 +38,6 @@ export function Login() {
       } else {
         await signIn(email, password);
         showToast('success', 'Logged in successfully!');
-
-        if (profile?.role === 'admin') {
-          navigate('/admin');
-        } else if (profile?.role === 'staff') {
-          navigate('/staff');
-        } else {
-          navigate('/client');
-        }
       }
     } catch (error: any) {
       showToast('error', error.message || 'An error occurred');
