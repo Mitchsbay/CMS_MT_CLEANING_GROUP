@@ -3,7 +3,10 @@ import { FileText, Download, Calendar, Users, MapPin, Briefcase, AlertTriangle, 
 import { supabase } from '../../lib/supabase';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
 import { useToast } from '../../components/ui/Toast';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface Stats {
   totalJobs: number;
@@ -36,6 +39,7 @@ export function ReportsPage() {
     pendingTasks: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'excel'>('pdf');
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -83,23 +87,96 @@ export function ReportsPage() {
     }
   };
 
-  const handleExportReport = () => {
-    const reportData = {
-      generated: new Date().toISOString(),
-      statistics: stats,
-    };
+  const handleExportPDF = async () => {
+    try {
+      showToast('info', 'Generating PDF report...');
 
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `mt-cleaning-report-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      const reportElement = document.getElementById('report-content');
+      if (!reportElement) {
+        throw new Error('Report content not found');
+      }
 
-    showToast('success', 'Report exported successfully');
+      const canvas = await html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`mt-cleaning-report-${new Date().toISOString().split('T')[0]}.pdf`);
+      showToast('success', 'PDF report exported successfully');
+    } catch (error: any) {
+      showToast('error', `Failed to export PDF: ${error.message}`);
+    }
+  };
+
+  const handleExportExcel = () => {
+    try {
+      const csvContent = [
+        ['MT Cleaning Group - Management Report'],
+        ['Generated:', new Date().toLocaleString()],
+        [''],
+        ['Category', 'Metric', 'Value'],
+        ['Jobs', 'Total Jobs', stats.totalJobs.toString()],
+        ['Jobs', 'Active Jobs', stats.activeJobs.toString()],
+        ['Staff', 'Total Staff', stats.totalStaff.toString()],
+        ['Staff', 'Active Staff', stats.activeStaff.toString()],
+        ['Sites', 'Total Sites', stats.totalSites.toString()],
+        ['Sites', 'Active Sites', stats.activeSites.toString()],
+        ['Clients', 'Total Clients', stats.totalClients.toString()],
+        ['Clients', 'Active Clients', stats.activeClients.toString()],
+        ['Incidents', 'Open Incidents', stats.openIncidents.toString()],
+        ['Assets', 'Total Assets', stats.totalAssets.toString()],
+        ['Assets', 'Available Assets', stats.availableAssets.toString()],
+        ['Tasks', 'Pending Tasks', stats.pendingTasks.toString()],
+      ]
+        .map(row => row.join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `mt-cleaning-report-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast('success', 'Excel report exported successfully');
+    } catch (error: any) {
+      showToast('error', `Failed to export Excel: ${error.message}`);
+    }
+  };
+
+  const handleExport = () => {
+    if (exportFormat === 'pdf') {
+      handleExportPDF();
+    } else {
+      handleExportExcel();
+    }
   };
 
   const statCards = [
@@ -124,16 +201,16 @@ export function ReportsPage() {
       value: stats.totalSites,
       subtitle: `${stats.activeSites} active`,
       icon: MapPin,
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/20',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-900/20',
     },
     {
       title: 'Clients',
       value: stats.totalClients,
       subtitle: `${stats.activeClients} active`,
       icon: Briefcase,
-      color: 'text-orange-600 dark:text-orange-400',
-      bgColor: 'bg-orange-100 dark:bg-orange-900/20',
+      color: 'text-cyan-600 dark:text-cyan-400',
+      bgColor: 'bg-cyan-100 dark:bg-cyan-900/20',
     },
     {
       title: 'Open Incidents',
@@ -148,8 +225,8 @@ export function ReportsPage() {
       value: stats.totalAssets,
       subtitle: `${stats.availableAssets} available`,
       icon: Package,
-      color: 'text-cyan-600 dark:text-cyan-400',
-      bgColor: 'bg-cyan-100 dark:bg-cyan-900/20',
+      color: 'text-teal-600 dark:text-teal-400',
+      bgColor: 'bg-teal-100 dark:bg-teal-900/20',
     },
   ];
 
@@ -162,75 +239,102 @@ export function ReportsPage() {
             Overview of your cleaning management system
           </p>
         </div>
-        <Button
-          onClick={handleExportReport}
-          icon={<Download className="h-4 w-4" />}
-          variant="outline"
-        >
-          Export Report
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value as 'pdf' | 'excel')}
+            className="w-32"
+          >
+            <option value="pdf">PDF</option>
+            <option value="excel">Excel</option>
+          </Select>
+          <Button
+            onClick={handleExport}
+            icon={<Download className="h-4 w-4" />}
+            variant="primary"
+          >
+            Export Report
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {statCards.map((stat) => (
-          <Card key={stat.title}>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                  {stat.subtitle}
-                </p>
+      <div id="report-content" className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-lg">
+        <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">MT Cleaning Group</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Management Report</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Generated</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {new Date().toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {statCards.map((stat) => (
+            <Card key={stat.title}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                    {stat.subtitle}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
               </div>
-              <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card title="Task Overview">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Pending Tasks</span>
+                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {stats.pendingTasks}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-500">
+                Tasks awaiting assignment or completion
               </div>
             </div>
           </Card>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Task Overview">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Pending Tasks</span>
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                {stats.pendingTasks}
-              </span>
+          <Card title="System Health">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">System Status</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                  Operational
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-500">
+                All systems running normally
+              </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-500">
-              Tasks awaiting assignment or completion
-            </div>
-          </div>
-        </Card>
-
-        <Card title="System Health">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">System Status</span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                Operational
-              </span>
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-500">
-              All systems running normally
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <Card title="Recent Activity">
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p>Activity tracking coming soon</p>
-          <p className="text-sm mt-1">
-            Detailed logs and activity reports will be available here
-          </p>
+          </Card>
         </div>
-      </Card>
+
+        <Card title="Summary">
+          <div className="prose dark:prose-invert max-w-none">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              This report provides an overview of the MT Cleaning Group management system as of {new Date().toLocaleDateString()}.
+              The system is currently managing {stats.totalJobs} jobs across {stats.totalSites} sites with {stats.totalStaff} staff members.
+              There are {stats.openIncidents} open incidents that require attention and {stats.pendingTasks} pending tasks.
+            </p>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

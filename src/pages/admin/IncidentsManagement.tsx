@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Edit2, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -21,6 +22,7 @@ export function IncidentsManagement() {
   const [showModal, setShowModal] = useState(false);
   const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
   const { showToast } = useToast();
+  const { profile } = useAuth();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -28,7 +30,6 @@ export function IncidentsManagement() {
     severity: 'low' as 'low' | 'medium' | 'high' | 'critical',
     status: 'open' as 'open' | 'investigating' | 'resolved' | 'closed',
     site_id: '',
-    reported_by: '',
   });
 
   useEffect(() => {
@@ -69,7 +70,6 @@ export function IncidentsManagement() {
         severity: incident.severity || 'low',
         status: incident.status || 'open',
         site_id: incident.site_id || '',
-        reported_by: incident.reported_by || '',
       });
     } else {
       setEditingIncident(null);
@@ -79,7 +79,6 @@ export function IncidentsManagement() {
         severity: 'low',
         status: 'open',
         site_id: '',
-        reported_by: '',
       });
     }
     setShowModal(true);
@@ -95,13 +94,17 @@ export function IncidentsManagement() {
     setLoading(true);
 
     try {
+      if (!profile?.id) {
+        throw new Error('User not authenticated');
+      }
+
       const incidentData = {
         title: formData.title,
-        description: formData.description || null,
+        description: formData.description,
         severity: formData.severity,
         status: formData.status,
         site_id: formData.site_id || null,
-        reported_by: formData.reported_by || null,
+        reported_by: profile.id,
       };
 
       if (editingIncident) {
@@ -303,13 +306,6 @@ export function IncidentsManagement() {
             <option value="resolved">Resolved</option>
             <option value="closed">Closed</option>
           </Select>
-
-          <Input
-            label="Reported By"
-            value={formData.reported_by}
-            onChange={(e) => setFormData({ ...formData, reported_by: e.target.value })}
-            helperText="Name or ID of person reporting"
-          />
         </form>
       </Modal>
     </div>
