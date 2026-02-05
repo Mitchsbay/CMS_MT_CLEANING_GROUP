@@ -34,21 +34,24 @@ export function StaffManagement() {
 
   useEffect(() => {
     loadStaff();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     filterStaffList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [staff, searchTerm, filterRole, filterStatus]);
 
   const loadStaff = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setStaff(data);
+      setStaff(data || []);
     } catch (error: any) {
       showToast('error', error.message);
     } finally {
@@ -60,9 +63,10 @@ export function StaffManagement() {
     let filtered = staff;
 
     if (searchTerm) {
+      const st = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (s) =>
-          s.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (s.full_name || '').toLowerCase().includes(st) ||
           (s.phone && s.phone.includes(searchTerm))
       );
     }
@@ -127,30 +131,21 @@ export function StaffManagement() {
         if (error) throw error;
         showToast('success', 'Staff member updated successfully');
       } else {
-        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`;
-        const { data: { session } } = await supabase.auth.getSession();
-
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        // IMPORTANT: use functions.invoke so Supabase includes BOTH:
+        // - Authorization Bearer token
+        // - apikey header (anon key)
+        const { error } = await supabase.functions.invoke('create-user', {
+          body: {
             email: formData.email,
             password: formData.password,
             full_name: formData.full_name,
-            phone: formData.phone,
+            phone: formData.phone || null,
             role: formData.role,
             status: formData.status,
-          }),
+          },
         });
 
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Failed to create user');
-        }
+        if (error) throw new Error(error.message || 'Failed to create user');
 
         showToast('success', 'Staff member created successfully');
       }
@@ -168,23 +163,13 @@ export function StaffManagement() {
     if (!confirm('Are you sure you want to delete this staff member?')) return;
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`;
-      const { data: { session } } = await supabase.auth.getSession();
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: staffId }),
+      // IMPORTANT: use functions.invoke (includes apikey + bearer token)
+      // IMPORTANT: payload key should be user_id (snake_case) unless your function expects something else
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: staffId },
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete user');
-      }
+      if (error) throw new Error(error.message || 'Failed to delete user');
 
       showToast('success', 'Staff member deleted successfully');
       await loadStaff();
