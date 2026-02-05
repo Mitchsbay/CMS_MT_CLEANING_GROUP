@@ -143,12 +143,13 @@ export interface Database {
       jobs: {
         Row: {
           id: string
+          title: string | null
           site_id: string
           assigned_to: string | null
           scheduled_date: string
           scheduled_start_time: string | null
           scheduled_end_time: string | null
-          status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+          status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled'
           notes: string | null
           created_by: string | null
           created_at: string
@@ -156,12 +157,13 @@ export interface Database {
         }
         Insert: {
           id?: string
+          title?: string | null
           site_id: string
           assigned_to?: string | null
           scheduled_date: string
           scheduled_start_time?: string | null
           scheduled_end_time?: string | null
-          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled'
           notes?: string | null
           created_by?: string | null
           created_at?: string
@@ -169,12 +171,13 @@ export interface Database {
         }
         Update: {
           id?: string
+          title?: string | null
           site_id?: string
           assigned_to?: string | null
           scheduled_date?: string
           scheduled_start_time?: string | null
           scheduled_end_time?: string | null
-          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled'
           notes?: string | null
           created_by?: string | null
           created_at?: string
@@ -214,6 +217,44 @@ export interface Database {
           task_description?: string | null
           completed?: boolean
           notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tasks: {
+        Row: {
+          id: string
+          job_id: string | null
+          title: string
+          description: string | null
+          status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+          assigned_to: string | null
+          due_date: string | null
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          job_id?: string | null
+          title: string
+          description?: string | null
+          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+          assigned_to?: string | null
+          due_date?: string | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          job_id?: string | null
+          title?: string
+          description?: string | null
+          status?: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+          assigned_to?: string | null
+          due_date?: string | null
           completed_at?: string | null
           created_at?: string
           updated_at?: string
@@ -296,11 +337,12 @@ export interface Database {
         Row: {
           id: string
           job_id: string | null
+          site_id: string | null
           reported_by: string
           title: string
           description: string
           severity: 'low' | 'medium' | 'high' | 'critical'
-          status: 'open' | 'in_progress' | 'resolved' | 'closed'
+          status: 'open' | 'in_progress' | 'investigating' | 'resolved' | 'closed'
           photos: string[] | null
           resolution_notes: string | null
           resolved_at: string | null
@@ -310,11 +352,12 @@ export interface Database {
         Insert: {
           id?: string
           job_id?: string | null
+          site_id?: string | null
           reported_by: string
           title: string
           description: string
           severity: 'low' | 'medium' | 'high' | 'critical'
-          status?: 'open' | 'in_progress' | 'resolved' | 'closed'
+          status?: 'open' | 'in_progress' | 'investigating' | 'resolved' | 'closed'
           photos?: string[] | null
           resolution_notes?: string | null
           resolved_at?: string | null
@@ -324,11 +367,12 @@ export interface Database {
         Update: {
           id?: string
           job_id?: string | null
+          site_id?: string | null
           reported_by?: string
           title?: string
           description?: string
           severity?: 'low' | 'medium' | 'high' | 'critical'
-          status?: 'open' | 'in_progress' | 'resolved' | 'closed'
+          status?: 'open' | 'in_progress' | 'investigating' | 'resolved' | 'closed'
           photos?: string[] | null
           resolution_notes?: string | null
           resolved_at?: string | null
@@ -340,10 +384,13 @@ export interface Database {
         Row: {
           id: string
           name: string
+          description: string | null
+          asset_type: string | null
           serial_number: string | null
           purchase_date: string | null
           location: string | null
-          status: 'operational' | 'maintenance' | 'retired' | 'lost'
+          site_id: string | null
+          status: 'operational' | 'maintenance' | 'retired' | 'lost' | 'available' | 'in_use'
           notes: string | null
           created_at: string
           updated_at: string
@@ -351,10 +398,13 @@ export interface Database {
         Insert: {
           id?: string
           name: string
+          description?: string | null
+          asset_type?: string | null
           serial_number?: string | null
           purchase_date?: string | null
           location?: string | null
-          status?: 'operational' | 'maintenance' | 'retired' | 'lost'
+          site_id?: string | null
+          status?: 'operational' | 'maintenance' | 'retired' | 'lost' | 'available' | 'in_use'
           notes?: string | null
           created_at?: string
           updated_at?: string
@@ -362,10 +412,13 @@ export interface Database {
         Update: {
           id?: string
           name?: string
+          description?: string | null
+          asset_type?: string | null
           serial_number?: string | null
           purchase_date?: string | null
           location?: string | null
-          status?: 'operational' | 'maintenance' | 'retired' | 'lost'
+          site_id?: string | null
+          status?: 'operational' | 'maintenance' | 'retired' | 'lost' | 'available' | 'in_use'
           notes?: string | null
           created_at?: string
           updated_at?: string
