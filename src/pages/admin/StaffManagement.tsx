@@ -127,24 +127,29 @@ export function StaffManagement() {
         if (error) throw error;
         showToast('success', 'Staff member updated successfully');
       } else {
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email: formData.email,
-          password: formData.password,
-          email_confirm: true,
-        });
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`;
+        const { data: { session } } = await supabase.auth.getSession();
 
-        if (authError) throw authError;
-
-        if (authData.user) {
-          const { error: profileError } = await supabase.from('profiles').insert({
-            id: authData.user.id,
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
             full_name: formData.full_name,
-            phone: formData.phone || null,
+            phone: formData.phone,
             role: formData.role,
             status: formData.status,
-          });
+          }),
+        });
 
-          if (profileError) throw profileError;
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to create user');
         }
 
         showToast('success', 'Staff member created successfully');
@@ -163,8 +168,23 @@ export function StaffManagement() {
     if (!confirm('Are you sure you want to delete this staff member?')) return;
 
     try {
-      const { error: authError } = await supabase.auth.admin.deleteUser(staffId);
-      if (authError) throw authError;
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: staffId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete user');
+      }
 
       showToast('success', 'Staff member deleted successfully');
       await loadStaff();
