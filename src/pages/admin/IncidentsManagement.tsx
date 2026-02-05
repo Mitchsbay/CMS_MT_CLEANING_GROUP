@@ -27,8 +27,8 @@ export function IncidentsManagement() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    severity: 'low' as 'low' | 'medium' | 'high' | 'critical',
-    status: 'open' as 'open' | 'investigating' | 'resolved' | 'closed',
+    severity: 'low' as Incident['severity'],
+    status: 'open' as Incident['status'],
     site_id: '',
   });
 

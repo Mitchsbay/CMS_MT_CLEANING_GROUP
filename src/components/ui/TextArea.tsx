@@ -4,10 +4,11 @@ import { classNames } from '../../lib/utils';
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  helperText?: string;
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ label, error, className, ...props }, ref) => {
+  ({ label, error, helperText, className, ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -27,6 +28,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           {...props}
         />
         {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {helperText && !error && (
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{helperText}</p>
+        )}
       </div>
     );
   }

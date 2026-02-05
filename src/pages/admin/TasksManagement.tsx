@@ -26,7 +26,7 @@ export function TasksManagement() {
     job_id: '',
     title: '',
     description: '',
-    status: 'pending' as 'pending' | 'in_progress' | 'completed',
+    status: 'pending' as Task['status'],
     assigned_to: '',
   });
 

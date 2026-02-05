@@ -28,7 +28,7 @@ export function AssetsManagement() {
     asset_type: '',
     serial_number: '',
     purchase_date: '',
-    status: 'available' as 'available' | 'in_use' | 'maintenance' | 'retired',
+    status: 'available' as Asset['status'],
     site_id: '',
     notes: '',
   });
