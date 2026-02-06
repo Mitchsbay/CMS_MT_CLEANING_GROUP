@@ -44,6 +44,12 @@ Deno.serve(async (req: Request) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
+    // Validate the JWT with Supabase Auth (since verify_jwt may be disabled at the gateway)
+    const { data: userData, error: userError } = await callerClient.auth.getUser(token);
+    if (userError || !userData?.user) {
+      return jsonResponse({ error: 'Invalid or expired session token' }, 401);
+    }
+
     // Verify caller's admin role via RPC (server-authoritative)
     const { data: isAdmin, error: rpcError } = await callerClient.rpc('is_admin');
     if (rpcError || !isAdmin) {

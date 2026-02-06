@@ -131,9 +131,13 @@ export function StaffManagement() {
         if (error) throw error;
         showToast('success', 'Staff member updated successfully');
       } else {
-        // IMPORTANT: use functions.invoke so Supabase includes BOTH:
-        // - Authorization Bearer token
-        // - apikey header (anon key)
+        // IMPORTANT: pass Authorization explicitly.
+        // supabase-js usually attaches the bearer token automatically, but in some deployments
+        // the header can be missing, causing a 401 from Edge Functions.
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) throw new Error('Not authenticated');
+
         const { error } = await supabase.functions.invoke('create-user', {
           body: {
             email: formData.email,
@@ -142,6 +146,9 @@ export function StaffManagement() {
             phone: formData.phone || null,
             role: formData.role,
             status: formData.status,
+          },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
         });
 
@@ -165,8 +172,15 @@ export function StaffManagement() {
     try {
       // IMPORTANT: use functions.invoke (includes apikey + bearer token)
       // IMPORTANT: payload key should be user_id (snake_case) unless your function expects something else
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error('Not authenticated');
+
       const { error } = await supabase.functions.invoke('delete-user', {
         body: { user_id: staffId },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
 
       if (error) throw new Error(error.message || 'Failed to delete user');
