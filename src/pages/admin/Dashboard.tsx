@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { formatDate, getStatusColor, getStatusLabel } from '../../lib/utils';
-import { Link } from '../../components/Router';
+import { Link } from 'react-router-dom';
 
 interface DashboardStats {
   totalJobs: number;

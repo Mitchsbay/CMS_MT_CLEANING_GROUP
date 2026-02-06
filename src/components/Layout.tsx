@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { Link, useRouter } from './Router';
+import { Link, useNavigate } from 'react-router-dom';
 import { classNames } from '../lib/utils';
 
 interface LayoutProps {
@@ -17,7 +17,7 @@ export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-  const { navigate } = useRouter();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
@@ -43,11 +43,18 @@ export function Layout({ children }: LayoutProps) {
 
   const staffNavigation = [
     { name: 'My Jobs', href: '/staff', icon: Home },
-    { name: 'Incidents', href: '/staff/incidents', icon: AlertTriangle },
-    { name: 'Assets', href: '/staff/assets', icon: Package },
   ];
 
-  const navigation = profile?.role === 'admin' ? adminNavigation : staffNavigation;
+  const clientNavigation = [
+    { name: 'Dashboard', href: '/client', icon: Home },
+  ];
+
+  const navigation =
+    profile?.role === 'admin'
+      ? adminNavigation
+      : profile?.role === 'client'
+      ? clientNavigation
+      : staffNavigation;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

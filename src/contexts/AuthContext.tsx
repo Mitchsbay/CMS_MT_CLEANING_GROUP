@@ -61,20 +61,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (!data) {
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            full_name: 'User',
-            role: 'staff',
-            status: 'active',
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        setProfile(newProfile);
+        // If profile doesn't exist, wait a bit for the trigger or retry
+        // This is safer than frontend-side creation logic
+        setProfile(null);
       } else {
+        if (data.status === 'inactive') {
+          await supabase.auth.signOut();
+          alert('Your account has been deactivated. Please contact your administrator.');
+          setProfile(null);
+          setUser(null);
+          setSession(null);
+          return;
+        }
         setProfile(data);
       }
     } catch (error) {
@@ -94,23 +92,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string, role: 'admin' | 'staff' | 'client') => {
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+          role: role,
+        }
+      }
     });
     if (error) throw error;
-
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: fullName,
-          role,
-          status: 'active',
-        });
-      if (profileError) throw profileError;
-    }
+    // Note: Profile is created automatically by the database trigger
   };
 
   const signOut = async () => {

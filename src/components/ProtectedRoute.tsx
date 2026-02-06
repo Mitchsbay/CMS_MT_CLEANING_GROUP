@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Navigate } from './Router';
+import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -22,11 +22,11 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   if (!user || !profile) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   if (requiredRole && profile.role !== requiredRole) {
-    return <Navigate to={`/${profile.role}`} />;
+    return <Navigate to={`/${profile.role}`} replace />;
   }
 
   return <>{children}</>;

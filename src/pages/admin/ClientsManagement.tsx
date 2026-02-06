@@ -84,7 +84,7 @@ export function ClientsManagement() {
           .from('clients')
           .update({
             name: formData.name,
-            contact_email: formData.contact_email,
+            contact_email: formData.contact_email.trim().toLowerCase(),
             contact_phone: formData.contact_phone || null,
             address: formData.address || null,
             notes: formData.notes || null,
@@ -96,7 +96,7 @@ export function ClientsManagement() {
       } else {
         const { error } = await supabase.from('clients').insert({
           name: formData.name,
-          contact_email: formData.contact_email,
+          contact_email: formData.contact_email.trim().toLowerCase(),
           contact_phone: formData.contact_phone || null,
           address: formData.address || null,
           notes: formData.notes || null,

@@ -1,4 +1,4 @@
-import { Router, Route } from './components/Router';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './components/ui/Toast';
@@ -16,13 +16,16 @@ import { AssetsManagement } from './pages/admin/AssetsManagement';
 import { ReportsPage } from './pages/admin/ReportsPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { StaffDashboard } from './pages/staff/StaffDashboard';
+import { StaffJobDetail } from './pages/staff/StaffJobDetail';
+import { ClientDashboard } from './pages/client/ClientDashboard';
+import { ClientJobReport } from './pages/client/ClientJobReport';
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
-          <Router>
+          <Routes>
             <Route path="/login" element={<Login />} />
 
             <Route
@@ -147,10 +150,43 @@ function App() {
             />
 
             <Route
-              path="/"
-              element={<Login />}
+              path="/staff/jobs/:id"
+              element={
+                <ProtectedRoute requiredRole="staff">
+                  <Layout>
+                    <StaffJobDetail />
+                  </Layout>
+                </ProtectedRoute>
+              }
             />
-          </Router>
+
+            <Route
+              path="/client"
+              element={
+                <ProtectedRoute requiredRole="client">
+                  <Layout>
+                    <ClientDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/client/jobs/:id"
+              element={
+                <ProtectedRoute requiredRole="client">
+                  <Layout>
+                    <ClientJobReport />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/"
+              element={<Navigate to="/login" replace />}
+            />
+          </Routes>
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
