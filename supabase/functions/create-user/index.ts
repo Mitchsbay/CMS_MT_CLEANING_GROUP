@@ -50,9 +50,19 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: 'Invalid or expired session token' }, 401);
     }
 
-    // Verify caller's admin role via RPC (server-authoritative)
-    const { data: isAdmin, error: rpcError } = await callerClient.rpc('is_admin');
-    if (rpcError || !isAdmin) {
+    // Verify caller's admin role via profiles using service role (server-authoritative)
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const callerId = userData.user.id;
+    const { data: callerProfile, error: profError } = await supabaseAdmin
+      .from('profiles')
+      .select('role,status')
+      .eq('id', callerId)
+      .maybeSingle();
+
+    if (profError || !callerProfile || callerProfile.role !== 'admin' || callerProfile.status !== 'active') {
       return jsonResponse({ error: 'Unauthorized: Admin access required' }, 403);
     }
 
@@ -78,10 +88,6 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: `Invalid status: ${desiredStatus}` }, 400);
     }
 
-    // Admin (service role) client
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
 
     // Create auth user. IMPORTANT: Do NOT store role/status in user_metadata.
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
